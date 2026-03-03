@@ -70,6 +70,51 @@ main                        # Production stable — jamais de commit direct
 - Tester sur la branche avant la PR vers `dev`
 - Tester sur `dev` avant la PR vers `main`
 
+## Changelog & Versioning
+
+**Semantic Versioning (semver) :**
+```
+MAJOR.MINOR.PATCH (ex: 0.2.1)
+├── MAJOR : Breaking changes
+├── MINOR : Nouvelles features
+└── PATCH : Bug fixes, petites améliorations
+```
+
+**Règles :**
+- Chaque PR mergée sur `dev` = nouvelle entrée dans `CHANGELOG.md` + bump de version dans `package.json`
+- `feat:` → bump MINOR (0.1.0 → 0.2.0)
+- `fix:` → bump PATCH (0.2.0 → 0.2.1)
+- Breaking change → bump MAJOR (0.2.1 → 1.0.0)
+- Le changelog suit le format [Keep a Changelog](https://keepachangelog.com/)
+- Entrées triées par date DESC (plus récente en premier)
+- Description orientée utilisateur, pas technique
+
+## Tests
+
+```bash
+npm test             # Run all tests
+npm run test:watch   # Watch mode
+```
+
+**Règles strictes :**
+- Les tests DOIVENT passer avant toute PR
+- Ne JAMAIS modifier un test pour le faire passer — corriger le code source
+- Ne pas s'arrêter tant que tous les tests ne passent pas
+- Chaque nouvelle feature/fix doit avoir ses tests correspondants
+- Les tests vivent dans `src/__tests__/` en miroir de la structure `src/`
+
+## Documentation
+
+**Fichiers docs maintenus :**
+- `README.md` — présentation projet, installation, usage
+- `CHANGELOG.md` — historique des changements (mis à jour à chaque PR)
+- `CLAUDE.md` — instructions pour Claude Code (ce fichier)
+- `Spec.md` — spécification technique complète
+
+**Règles :**
+- Mettre à jour la documentation concernée dans la même PR que le code
+- Ne pas créer de fichiers `.md` supplémentaires à la racine sans raison
+
 ## Environment Variables
 
 All optional with sensible defaults — see `.env.example`:
