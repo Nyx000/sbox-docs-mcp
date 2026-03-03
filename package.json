@@ -1,6 +1,6 @@
 {
   "name": "sbox-docs-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for fetching s&box (Facepunch) documentation — search guides, read pages, and browse API references.",
   "type": "module",
   "main": "dist/index.js",
