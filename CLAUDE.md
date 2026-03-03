@@ -46,6 +46,30 @@ src/
 - **Zod schemas** — defined in `src/schemas/index.ts`, tool handlers receive pre-validated params
 - **Transport** — stdio (StdioServerTransport) for universal client compatibility
 
+## Git Flow
+
+```
+main                        # Production stable — jamais de commit direct
+  └── dev                   # Développement — intégration des features
+       ├── feature/xxx      # Nouvelles fonctionnalités
+       ├── fix/xxx          # Corrections de bugs
+       └── refactor/xxx     # Refactoring
+```
+
+**Workflow obligatoire :**
+
+1. **Créer une branche depuis `dev`** : `git checkout -b feature/nom-feature dev`
+2. **Commits atomiques** avec Conventional Commits : `feat:`, `fix:`, `refactor:`
+3. **PR vers `dev`** : `gh pr create -B dev`
+4. **Review + merge sur `dev`**
+5. **Quand `dev` est stable** → PR de `dev` vers `main` : `gh pr create -B main`
+
+**Règles :**
+- Ne JAMAIS commit directement sur `main` ou `dev`
+- Toute modification passe par une branche `feature/`, `fix/`, ou `refactor/` depuis `dev`
+- Tester sur la branche avant la PR vers `dev`
+- Tester sur `dev` avant la PR vers `main`
+
 ## Environment Variables
 
 All optional with sensible defaults — see `.env.example`:
