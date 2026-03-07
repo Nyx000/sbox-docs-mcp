@@ -384,14 +384,14 @@ SBOX_DOCS_USER_AGENT="sbox-docs-mcp/1.0"  # User-Agent pour les requêtes
 
 ## 10. Roadmap
 
-### Phase 1 — MVP (v0.1.0)
+### Phase 1 — MVP (v0.2.0) ✅
 
-- [ ] Setup projet TypeScript + SDK MCP
-- [ ] Implémenter `sbox_docs_get_page` (fetch + Turndown)
-- [ ] Implémenter `sbox_docs_search` (index minisearch des pages connues)
-- [ ] Cache en mémoire avec TTL
-- [ ] Transport stdio
-- [ ] Tests unitaires de base
+- [x] Setup projet TypeScript + SDK MCP
+- [x] Implémenter `sbox_docs_get_page` (fetch + Turndown)
+- [x] Implémenter `sbox_docs_search` (index minisearch avec crawl BFS)
+- [x] Cache en mémoire avec TTL + LRU eviction
+- [x] Transport stdio
+- [x] Tests unitaires (50 tests — cache, fetcher, search-index, tools, schemas)
 - [ ] Publication npm (`sbox-docs-mcp`)
 
 **Livrable :** Un serveur MCP fonctionnel capable de chercher et lire les docs narratives de s&box.
