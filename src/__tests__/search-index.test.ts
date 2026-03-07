@@ -126,4 +126,77 @@ describe('SearchIndex', () => {
     await index.ensureInitialized()
     expect(index.isInitialized).toBe(true)
   })
+
+  it('should find PascalCase terms when searched by sub-word', async () => {
+    mockedFetchDocs.mockResolvedValueOnce([
+      makeDoc(
+        '1',
+        'https://docs.facepunch.com/doc/scene-meta',
+        'Scene Metadata',
+        'Use SceneFile to load scenes.',
+      ),
+      makeDoc(
+        '2',
+        'https://docs.facepunch.com/doc/other',
+        'Other Page',
+        'This page has nothing relevant.',
+      ),
+    ])
+
+    await index.initialize()
+
+    // "file" alone should match "SceneFile" via PascalCase decomposition
+    const results = index.search('file')
+    expect(results.length).toBeGreaterThan(0)
+    expect(results[0].title).toBe('Scene Metadata')
+  })
+
+  it('should find content inside code blocks', async () => {
+    mockedFetchDocs.mockResolvedValueOnce([
+      makeDoc(
+        '1',
+        'https://docs.facepunch.com/doc/comp',
+        'Components',
+        'Create components:\n```csharp\npublic class MyCustomComponent : Component { }\n```',
+      ),
+    ])
+
+    await index.initialize()
+
+    const results = index.search('MyCustomComponent')
+    expect(results.length).toBeGreaterThan(0)
+  })
+
+  it('should ignore stop words and still find relevant results', async () => {
+    mockedFetchDocs.mockResolvedValueOnce([
+      makeDoc(
+        '1',
+        'https://docs.facepunch.com/doc/spawn',
+        'Spawning Objects',
+        'Learn to spawn objects at runtime in your game scene.',
+      ),
+    ])
+
+    await index.initialize()
+
+    const results = index.search('how to spawn objects at runtime')
+    expect(results.length).toBeGreaterThan(0)
+    expect(results[0].title).toBe('Spawning Objects')
+  })
+
+  it('should find results despite typos via fuzzy matching', async () => {
+    mockedFetchDocs.mockResolvedValueOnce([
+      makeDoc(
+        '1',
+        'https://docs.facepunch.com/doc/physics',
+        'Physics System',
+        'The collision system handles physics interactions with rigidbody components.',
+      ),
+    ])
+
+    await index.initialize()
+
+    const results = index.search('colision')
+    expect(results.length).toBeGreaterThan(0)
+  })
 })

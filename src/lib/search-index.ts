@@ -3,6 +3,31 @@ import { fetchAllOutlineDocs } from './fetcher.js'
 import { Cache } from './cache.js'
 import type { FetchResult } from './fetcher.js'
 
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'was', 'were',
+  'be', 'been', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+  'from', 'as', 'how', 'what', 'which', 'who', 'when', 'where', 'why',
+  'do', 'does', 'did', 'has', 'have', 'had', 'will', 'would', 'could',
+  'should', 'can', 'it', 'its', 'this', 'that', 'not', 'no', 'so',
+  'if', 'then', 'than', 'too', 'very', 'just',
+])
+
+const PASCAL_SPLIT = /(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/
+
+function splitCompoundTerm(term: string): string[] {
+  const parts = term.split(PASCAL_SPLIT)
+  if (parts.length <= 1) return [term.toLowerCase()]
+  const lowerParts = parts.map((p) => p.toLowerCase()).filter((p) => p.length >= 2)
+  return [term.toLowerCase(), ...lowerParts]
+}
+
+function processSearchTerm(term: string): string[] | null {
+  const lower = term.toLowerCase()
+  if (STOP_WORDS.has(lower)) return null
+  if (lower.length < 2) return null
+  return splitCompoundTerm(term)
+}
+
 export interface SearchResult {
   title: string
   url: string
@@ -20,7 +45,11 @@ const SNIPPET_LENGTH = 200
 
 function extractSnippet(content: string, query: string): string {
   const lower = content.toLowerCase()
-  const terms = query.toLowerCase().split(/\s+/)
+  const terms = query
+    .toLowerCase()
+    .split(/\s+/)
+    .flatMap((t) => splitCompoundTerm(t))
+    .filter((t) => !STOP_WORDS.has(t) && t.length >= 2)
 
   let bestPos = -1
   for (const term of terms) {
@@ -45,7 +74,8 @@ function stripMarkdownFormatting(md: string): string {
   return md
     .replace(/#{1,6}\s/g, '')
     .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')
-    .replace(/`{1,3}[^`]*`{1,3}/g, '')
+    .replace(/```[\w]*\n?([\s\S]*?)```/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     .replace(/\n{2,}/g, '\n')
     .trim()
@@ -64,10 +94,16 @@ export class SearchIndex {
       fields: ['title', 'content'],
       storeFields: ['title', 'url'],
       idField: 'id',
+      processTerm: processSearchTerm,
       searchOptions: {
         prefix: true,
-        fuzzy: 0.2,
-        boost: { title: 2 },
+        fuzzy: (term) => {
+          if (term.length <= 3) return false
+          if (term.length <= 5) return 1
+          return 0.3
+        },
+        boost: { title: 3 },
+        weights: { fuzzy: 0.3, prefix: 0.5 },
       },
     })
   }
