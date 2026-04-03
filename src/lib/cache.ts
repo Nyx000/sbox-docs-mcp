@@ -14,17 +14,32 @@ export class Cache<T> {
   }
 
   get(key: string): T | undefined {
-    // TODO: lookup + expiration check
-    return undefined
+    const entry = this.store.get(key)
+    if (!entry) return undefined
+    if (Date.now() > entry.expiresAt) {
+      this.store.delete(key)
+      return undefined
+    }
+    return entry.value
   }
 
   set(key: string, value: T): void {
-    // TODO: insert + LRU eviction
+    // LRU eviction — remove oldest entry if at capacity
+    if (this.store.size >= this.maxEntries) {
+      const oldest = this.store.keys().next().value
+      if (oldest !== undefined) this.store.delete(oldest)
+    }
+    this.store.set(key, { value, expiresAt: Date.now() + this.ttlMs })
   }
 
   has(key: string): boolean {
-    // TODO: check existence + expiration
-    return false
+    const entry = this.store.get(key)
+    if (!entry) return false
+    if (Date.now() > entry.expiresAt) {
+      this.store.delete(key)
+      return false
+    }
+    return true
   }
 
   clear(): void {
